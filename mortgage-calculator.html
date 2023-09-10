@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mortgage Calculator</title>
+    <!-- Bootstrap CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">Mortgage Calculator</h1>
+        <form id="calculator-form" class="justify-content-center">
+            <div class="form-group">
+                <label for="loan-amount">Loan Amount:</label>
+                <input type="number" id="loan-amount" class="form-control" min="0" step="0.01" value="200000" required>
+            </div>
+            <div class="form-group">
+                <label for="interest-rate">Interest Rate (%):</label>
+                <input type="number" id="interest-rate" class="form-control" min="0" max="100" step="0.01" value="3.5" required>
+            </div>
+            <div class="form-group">
+                <label for="loan-term">Loan Term (years):</label>
+                <input type="number" id="loan-term" class="form-control" min="1" max="50" step="1" value="30" required>
+            </div>
+            <div class="form-group">
+                <label for="tax-rate">Tax Rate (%):</label>
+                <input type="number" id="tax-rate" class="form-control" min="0" max="100" step="0.01" value="10" required>
+            </div>
+            <div class="form-group">
+                <label for="start-date">Start Date:</label>
+                <input type="date" id="start-date" class="form-control" value="<?php echo date('Y-m-d'); ?>" required>
+            </div>
+            <button type="submit" id="calculate-button" class="btn btn-primary">Calculate</button>
+        </form>
+        <div id="result-div" class="mt-4">
+            <!-- Display the result here -->
+        </div>
+    </div>
+
+    <!-- Script to handle the calculation logic -->
+    <script>
+        // Get the elements from the document
+        var calculatorForm = document.getElementById("calculator-form");
+        var loanAmountInput = document.getElementById("loan-amount");
+        var interestRateInput = document.getElementById("interest-rate");
+        var loanTermInput = document.getElementById("loan-term");
+        var taxRateInput = document.getElementById("tax-rate");
+        var startDateInput = document.getElementById("start-date");
+        var calculateButton = document.getElementById("calculate-button");
+        var resultDiv = document.getElementById("result-div");
+
+        // Add an event listener to the form submit
+        calculatorForm.addEventListener("submit", function(event) {
+            // Prevent the default form submission
+            event.preventDefault();
+
+            // Get the input values
+            var loanAmount = parseFloat(loanAmountInput.value);
+            var interestRate = parseFloat(interestRateInput.value) / 100;
+            var loanTerm = parseInt(loanTermInput.value);
+            var taxRate = parseFloat(taxRateInput.value) / 100;
+            var startDate = new Date(startDateInput.value);
+
+            // Validate the input values
+            if (isNaN(loanAmount) || isNaN(interestRate) || isNaN(loanTerm) || isNaN(taxRate) || isNaN(startDate.getTime())) {
+                // Display an error message
+                resultDiv.innerHTML = "<p class='text-danger'>Please enter valid input values.</p>";
+                return;
+            }
+
+            // Calculate the monthly payment
+            var monthlyInterestRate = interestRate / 12;
+            var numberOfPayments = loanTerm * 12;
+            var monthlyPayment = (loanAmount * monthlyInterestRate) / (1 - Math.pow(1 + monthlyInterestRate, -numberOfPayments));
+
+            // Display the monthly payment
+            resultDiv.innerHTML = "<p class='text-success'>Your monthly payment is $" + monthlyPayment.toFixed(2) + "</p>";
+
+            // Create a table for the month-wise report
+            var table = document.createElement("table");
+            table.className = "table table-bordered table-striped";
+            
+            // Create a table header row
+            var headerRow = document.createElement("tr");
+            
+            // Create and append the table header cells
+            var headerCells = ["Month", "Principal", "Interest", "Tax", "Balance"];
+            for (var i = 0; i < headerCells.length; i++) {
+                var headerCell = document.createElement("th");
+                headerCell.textContent = headerCells[i];
+                headerRow.appendChild(headerCell);
+            }
+
+            // Append the header row to the table
+            table.appendChild(headerRow);
+
+            // Initialize the variables for the loop
+            var balance = loanAmount;
+            var month = startDate.getMonth();
+            var year = startDate.getFullYear();
+
+            // Loop through the number of payments
+            for (var i = 1; i <= numberOfPayments; i++) {
+                // Create a table body row
+                var bodyRow = document.createElement("tr");
+
+                // Calculate the interest for the current month
+                var interest = balance * monthlyInterestRate;
+
+                // Calculate the principal for the current month
+                var principal = monthlyPayment - interest;
+
+                // Calculate the tax for the current month
+                var tax = balance * taxRate / 12;
+
+                // Update the balance
+                balance -= principal;
+
+                // Create and append the table body cells
+                var bodyCells = [month + "/" + year, principal.toFixed(2), interest.toFixed(2), tax.toFixed(2), balance.toFixed(2)];
+                for (var j = 0; j < bodyCells.length; j++) {
+                    var bodyCell = document.createElement("td");
+                    bodyCell.textContent = bodyCells[j];
+                    bodyRow.appendChild(bodyCell);
+                }
+
+                // Append the body row to the table
+                table.appendChild(bodyRow);
+
+                // Increment the month and year
+                month++;
+                if (month > 12) {
+                    month = 1;
+                    year++;
+                }
+            }
+
+            // Append the table to the result div
+            resultDiv.appendChild(table);
+        });
+    </script>
+</body>
+</html>
