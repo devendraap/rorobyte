@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spark Job Resource Calculator</title>
+    <!-- Bootstrap CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">Spark Job Resource Calculator</a>
+        </nav>
+        <!-- Main content -->
+        <div class="row mt-4">
+            <!-- Input form -->
+            <div class="col-md-6">
+                <h4>Enter the cluster and spark details:</h4>
+                <form id="input-form">
+                    <div class="form-group">
+                        <label for="cluster-memory">Cluster total memory (GB):</label>
+                        <input type="number" class="form-control" id="cluster-memory" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cluster-core">Cluster total core:</label>
+                        <input type="number" class="form-control" id="cluster-core" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="memory-overhead-factor">Memory overhead factor:</label>
+                        <input type="number" class="form-control" id="memory-overhead-factor" min="0" max="1" step="0.01" value="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="cores-per-executor">Cores per executor:</label>
+                        <input type="number" class="form-control" id="cores-per-executor" min="1" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="executor-memory-fraction">Executor memory fraction:</label>
+                        <input type="number" class="form-control" id="executor-memory-fraction" min="0" max="1" step="0.01" value="0.6">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Calculate</button>
+                </form>
+            </div>
+            <!-- Output result -->
+            <div class="col-md-6">
+                <h4>The optimal executor resources are:</h4>
+                <div id="output-result">
+                    <!-- Display the result here -->
+                </div>
+                <!-- Calculation steps -->
+                <h4>The calculation steps are:</h4>
+                <div id="calculation-steps">
+                    <!-- Display the steps here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap CDN -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Custom script -->
+    <script>
+        // Get the input elements
+        const clusterMemoryInput = $("#cluster-memory");
+        const clusterCoreInput = $("#cluster-core");
+        const memoryOverheadFactorInput = $("#memory-overhead-factor");
+        const coresPerExecutorInput = $("#cores-per-executor");
+        const executorMemoryFractionInput = $("#executor-memory-fraction");
+
+        // Get the output element
+        const outputResult = $("#output-result");
+
+        // Get the calculation steps element
+        const calculationSteps = $("#calculation-steps");
+
+        // Handle the form submission
+        $("#input-form").submit(function(event) {
+            // Prevent the default action
+            event.preventDefault();
+
+            // Get the input values
+            const clusterMemory = Number(clusterMemoryInput.val());
+            const clusterCore = Number(clusterCoreInput.val());
+            const memoryOverheadFactor = Number(memoryOverheadFactorInput.val());
+            const coresPerExecutor = Number(coresPerExecutorInput.val());
+            const executorMemoryFraction = Number(executorMemoryFractionInput.val());
+
+            // Validate the input values
+            if (clusterMemory <= 0 || clusterCore <= 0) {
+                alert("Please enter positive values for cluster memory and core.");
+                return;
+            }
+            if (memoryOverheadFactor <= 0 || memoryOverheadFactor >= 1) {
+                alert("Please enter a value between 0 and 1 for memory overhead factor.");
+                return;
+            }
+            if (coresPerExecutor <= 0) {
+                alert("Please enter a positive value for cores per executor.");
+                return;
+            }
+            if (executorMemoryFraction <= 0 || executorMemoryFraction >= 1) {
+                alert("Please enter a value between 0 and 1 for executor memory fraction.");
+                return;
+            }
+
+            // Calculate the executor memory
+            const executorMemoryOverhead = Math.max(memoryOverheadFactor * clusterMemory, 0.384); // The minimum overhead is 384 MB, which is 0.384 GB
+            const executorMemory = (clusterMemory - executorMemoryOverhead) / Math.ceil(clusterCore / coresPerExecutor);
+
+            // Calculate the executor instances
+            const executorInstances = Math.floor(clusterCore / coresPerExecutor);
+
+            // Display the result
+            outputResult.html(`
+                <ul class="list-group">
+                    <li class="list-group-item">Executor memory: ${executorMemory.toFixed(2)} GB</li>
+                    <li class="list-group-item">Executor instances: ${executorInstances}</li>
+                </ul>
+            `);
+
+            // Display the calculation steps
+            calculationSteps.html(`
+                <ol>
+                    <li>Calculate the executor memory overhead as the maximum of ${memoryOverheadFactor} * ${clusterMemory} GB and 0.384 GB, which is ${executorMemoryOverhead.toFixed(2)} GB.</li>
+                    <li>Calculate the number of executors as the ceiling of ${clusterCore} / ${coresPerExecutor}, which is ${Math.ceil(clusterCore / coresPerExecutor)}.</li>
+                    <li>Calculate the executor memory as (${clusterMemory} GB - ${executorMemoryOverhead.toFixed(2)} GB) / ${Math.ceil(clusterCore / coresPerExecutor)}, which is ${executorMemory.toFixed(2)} GB.</li>
+                    <li>Calculate the executor instances as the floor of ${clusterCore} / ${coresPerExecutor}, which is ${executorInstances}.</li>
+                </ol>
+            `);
+        });
+    </script>
+</body>
+</html>
