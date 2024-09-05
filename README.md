@@ -9,4 +9,9 @@ A Datastore to intergrate transactional and analytics workloads.
 - [Mortgage Calculator](https://www.rorobyte.com/mortgage-calculator#)
 
 ## About founder:
-> I'm [Devendra](http://linkedin.com/in/devendraparhate/) from Banglore. During last 5 years, I have built teams to make Data Platform at multiple companies.
+> I'm [Devendra](http://linkedin.com/in/devendraparhate/) from Banglore. During last 6 years, I have built teams at multiple companies which implemented Data Platform.
+
+## Contact us:
+> RoRobyte LLP.<br>
+> Bengaluru, Karnataka <br>
+> [contact@rorobyte.com](mailto:someone@example.com)
