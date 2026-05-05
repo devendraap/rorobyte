@@ -31,13 +31,13 @@
             box-sizing: border-box;
             width: 100%;
             min-height: 100vh;
-            padding: 40px; /* Internal spacing so text isn't touching the screen edge */
+            padding: 0px; /* Internal spacing so text isn't touching the screen edge */
         }
 
         /* Status indicator - floating in the top right corner */
         #status {
             position: fixed;
-            top: 10px;
+            bottom: 0px;
             right: 20px;
             font-size: 0.75rem;
             color: var(--text-secondary);
@@ -108,7 +108,7 @@
                     lastContent = markdown;
                     statusEl.innerText = "LIVE • " + new Date().toLocaleTimeString();
                 } else {
-                    statusEl.innerText = "SYNCED • " + new Date().toLocaleTimeString();
+                    statusEl.innerText = "" + new Date().toLocaleTimeString();
                 }
             } catch (err) {
                 statusEl.innerHTML = `<span style="color: #ff7b72">Connection Error</span>`;
